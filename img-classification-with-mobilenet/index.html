@@ -1,17 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Getting Started with ml5.js</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- p5 -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
-        <!-- ml5 -->
-        <script src="https://unpkg.com/ml5@0.1.1/dist/ml5.min.js"></script>
-        <!-- my own -->
-        <script src="sketch.js"></script>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- p5 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+    <!-- ml5 -->
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <title>Image Classification</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-    <body>
-    </body>
+        .image-preview {
+            width: 300px;
+            min-height: 100px;
+            border: 2px solid #ddd;
+            margin-top: 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        .image-preview__image {
+            display: none;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Classification</h1>
+    <input type="file" name="inpFile" id="inpFile">
+    <div class="image-preview" id="imagePreview">
+        <img src="" id="image" alt="Image Preview" class="image-preview__image">
+        <span class="image-preview__default-text">Image Preview</span>
+    </div>
+
+    <div class="result">
+        <h2 id="label"></h2>
+        <h3 id="prob"></h3>
+    </div>
+
+    <script>
+        const inpFile = document.getElementById('inpFile')
+        const previewContainer = document.getElementById('imagePreview')
+        const previewImage = previewContainer.querySelector('.image-preview__image')
+        const previewDefaultText = previewContainer.querySelector('.image-preview__default-text')
+        let image, mobilenet
+
+        inpFile.addEventListener('change', function() {
+            const file = this.files[0]
+
+            if(file) {
+                const reader = new FileReader()
+
+                previewDefaultText.style.display = "none"
+                previewImage.style.display = "block"
+
+                reader.addEventListener('load', function() {
+                    console.log(this)
+                    previewImage.setAttribute('src', this.result)
+                    img = this.result
+                    mobilenet = ml5.imageClassifier('MobileNet', modelReady)
+                })
+
+                reader.readAsDataURL(file)
+            } else {
+                previewDefaultText.style.display = null
+                previewImage.style.display = null
+                previewImage.setAttribute('src', '')
+            }
+        })
+
+        // ml5.js
+
+        function modelReady() {
+            console.log('Model is ready!');
+            mobilenet.classify(document.getElementById('image'), gotResults);
+        }
+
+        function gotResults(err, results) {
+            if (err) {
+                console.error(err)
+            } else {
+                console.log(results)
+                let label = results[0].label
+                let prob = results[0].confidence
+                document.getElementById("label").innerHTML = `${label}`
+                document.getElementById("prob").innerHTML = `${prob}`
+            }
+        }
+
+    </script>
+
+</body>
 </html>
